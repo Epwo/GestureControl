@@ -120,9 +120,8 @@ while True:
             emplacements[GD.get_fingers_nb_name_dict()[e]] = hand_landmarks.landmark[e]
 
         prev_positions.append(emplacements)
-        print("---")
-        print(emplacements)
-        print("___")
+        # Sometimes might need to force the use of the GetTips typing..
+        # TODO:
     # Show the frame
     if GD.is_idle:
         cv2.putText(
