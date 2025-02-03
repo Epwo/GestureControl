@@ -40,65 +40,87 @@ def SetIdle(isIdle, IdleTime):
     return is_idle, idle_time
 
 
-url = ''
-
 # Initialize MediaPipe Hands model
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
+hands = mp_hands.Hands(
+    static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5
+)
 mp_drawing = mp.solutions.drawing_utils
 
-blue_spec = mp_drawing.DrawingSpec(color=(255, 0, 0), thickness=5, circle_radius=5)  # Blue color for landmark 0
-purple_spec = mp_drawing.DrawingSpec(color=(200, 0, 200), thickness=2, circle_radius=2)  # pruple color for landmark 0
-test_spec = mp_drawing.DrawingSpec(color=(100, 100, 100), thickness=2, circle_radius=2)  # pruple color for landmark 0
-default_spec = mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2,
-                                      circle_radius=2)  # Default color for other landmarks
+blue_spec = mp_drawing.DrawingSpec(
+    color=(255, 0, 0), thickness=5, circle_radius=5
+)  # Blue color for landmark 0
+purple_spec = mp_drawing.DrawingSpec(
+    color=(200, 0, 200), thickness=2, circle_radius=2
+)  # pruple color for landmark 0
+test_spec = mp_drawing.DrawingSpec(
+    color=(100, 100, 100), thickness=2, circle_radius=2
+)  # pruple color for landmark 0
+default_spec = mp_drawing.DrawingSpec(
+    color=(0, 255, 0), thickness=2, circle_radius=2
+)  # Default color for other landmarks
 
 
 def scroll_mouse(direction):
-    if direction == 'up':
-        pyautogui.scroll(600)  # Changez -10 à une valeur positive pour défiler vers le haut
-    if direction == 'down':
+    if direction == "up":
+        pyautogui.scroll(
+            600
+        )  # Changez -10 à une valeur positive pour défiler vers le haut
+    if direction == "down":
         pyautogui.scroll(-600)
 
 
-fingers_dict = {
+fingers_nb_name = {
     4: "thumb",
     8: "index",
     12: "major",
     16: "anular",
     20: "auriculaire",
-    20: "base_hand"
+    0: "base_hand",
 }
+
+fingers_name_nb = {v: k for k, v in fingers_nb_name.items()}
 
 
 def distance3D(landmark1, landmark2, round_value=2):
-    return [round(landmark1.x - landmark2.x, round_value),
-            round(landmark1.y - landmark2.y, round_value),
-            round(landmark1.z - landmark2.z, round_value)
-            ]
+    return [
+        round(landmark1.x - landmark2.x, round_value),
+        round(landmark1.y - landmark2.y, round_value),
+        round(landmark1.z - landmark2.z, round_value),
+    ]
 
 
 # Define gestures based on keypoints or simple rules
 def detect_gesture(landmarks, prev_positions):
     # Example rule-based detection: Check if thumb is near index finger (signifying a "pinch" gesture)
 
-    thumb_tip = landmarks[4]
-    index_tip = landmarks[8]
-    major_tip = landmarks[12]
-    anunlar_tip = landmarks[16]
-    auriculaire_tip = landmarks[20]
-    base_hand = landmarks[0]
+    thumb_tip = landmarks[fingers_name_nb["thumb"]]
+    index_tip = landmarks[fingers_name_nb["index"]]
+    major_tip = landmarks[fingers_name_nb["major"]]
+    anunlar_tip = landmarks[fingers_name_nb["anular"]]
+    auriculaire_tip = landmarks[fingers_name_nb["auriculaire"]]
+    base_hand = landmarks[fingers_name_nb["base_hand"]]
 
-    distance_thumbs_index = ((thumb_tip.x - index_tip.x) ** 2 + (thumb_tip.y - index_tip.y) ** 2) ** 0.5
+    distance_thumbs_index = (
+        (thumb_tip.x - index_tip.x) ** 2 + (thumb_tip.y - index_tip.y) ** 2
+    ) ** 0.5
 
-    hand_ratio = ((landmarks[0].x - landmarks[5].x) / (landmarks[0].y - landmarks[5].y)) / 0.19
+    hand_ratio = (
+        (base_hand.x - landmarks[5].x) / (landmarks[0].y - landmarks[5].y)
+    ) / 0.19
 
     if len(prev_positions) > 7:
 
         # print('dists index & previous', distance3D(thumb_tip, prev_positions[-3]["index_tip"]))5
-        is_dist_index = ((distance3D(index_tip, prev_positions[-3]["index"])[1]) ** 2) ** 0.5 > 0.12
-        is_dist_major = ((distance3D(major_tip, prev_positions[-3]["major"])[1]) ** 2) ** 0.5 > 0.12
-        is_dist_annu = ((distance3D(anunlar_tip, prev_positions[-3]["anular"])[1]) ** 2) ** 0.5 > 0.12
+        is_dist_index = (
+            (distance3D(index_tip, prev_positions[-3]["index"])[1]) ** 2
+        ) ** 0.5 > 0.12
+        is_dist_major = (
+            (distance3D(major_tip, prev_positions[-3]["major"])[1]) ** 2
+        ) ** 0.5 > 0.12
+        is_dist_annu = (
+            (distance3D(anunlar_tip, prev_positions[-3]["anular"])[1]) ** 2
+        ) ** 0.5 > 0.12
         dim3_dist_base = distance3D(base_hand, prev_positions[-3]["base_hand"])
         is_base_hand_moving = False
 
@@ -108,6 +130,7 @@ def detect_gesture(landmarks, prev_positions):
 
         if ((dim3_dist_base[0]) ** 2) ** 0.5 > x_margin_moving:  # x coords
             print("x axis")
+            print(((dim3_dist_base[0]) ** 2) ** 0.5, ">", x_margin_moving)
             is_base_hand_moving = True
         if dim3_dist_base[1] > y_margin_moving:  # y coords
             print("y axis")
@@ -128,23 +151,23 @@ def detect_gesture(landmarks, prev_positions):
         else:
             SetIdle(isIdle=False, IdleTime=time.time())
 
-
         if is_dist_index and is_dist_major and is_dist_annu and not is_base_hand_moving:
             if not getRecentAction():
                 print("swipe", distance3D(index_tip, prev_positions[-3]["index"])[1])
                 print(recent_action, time.time())
                 if distance3D(index_tip, prev_positions[-3]["index"])[1] > 0:
-                    scroll_mouse('down')
+                    scroll_mouse("down")
                     setRecentAction(True)
                     SetIdle(isIdle=False, IdleTime=time.time())
-                    print("scroll down",time.time())
+                    print("scroll down", time.time())
+                    return "swipe_vert down"
                 else:
-                    scroll_mouse('up')
+                    scroll_mouse("up")
                     setRecentAction(True)
                     SetIdle(isIdle=False, IdleTime=time.time())
                     print("scroll up", time.time())
+                    return "swipe_vert up"
 
-            return "swipe"
     if distance_thumbs_index < 0.05:
         return "Pinch"
     return "Unknown Gesture"
@@ -189,44 +212,90 @@ while True:
                 image=frame,
                 landmark_list=hand_landmarks,
                 connections=mp_hands.HAND_CONNECTIONS,
-                landmark_drawing_spec=landmark_styles
+                landmark_drawing_spec=landmark_styles,
             )
 
             # Display landmark numbers
             for i, landmark in enumerate(hand_landmarks.landmark):
-                if i in list(fingers_dict.keys()) and len(prev_positions) > 6:
-                    prev_coord = prev_positions[-7][fingers_dict[i]]
+                if i in list(fingers_nb_name.keys()) and len(prev_positions) > 6:
+                    prev_coord = prev_positions[-7][fingers_nb_name[i]]
                     actual_coords = landmark
                     dist = distance3D(prev_coord, landmark)
 
-                    cv2.putText(frame, f"{fingers_dict[i]}:{x, y} - {dist}", (10, 10 + i * 10),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
+                    cv2.putText(
+                        frame,
+                        f"{fingers_nb_name[i]}:{x, y} - {dist}",
+                        (10, 10 + i * 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (255, 0, 0),
+                        1,
+                        cv2.LINE_AA,
+                    )
                 # Get the coordinates of the landmark
                 h, w, _ = frame.shape
                 x, y = int(landmark.x * w), int(landmark.y * h)
                 # Display the landmark number
-                cv2.putText(frame, str(i), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
+                cv2.putText(
+                    frame,
+                    str(i),
+                    (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (255, 0, 0),
+                    1,
+                    cv2.LINE_AA,
+                )
 
             # Detect gesture based on hand landmarks
             gesture = detect_gesture(hand_landmarks.landmark, prev_positions)
-            cv2.putText(frame, f'Gesture: {gesture}', (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2,
-                        cv2.LINE_AA)
+            print("----")
+            print(gesture)
+            print("____")
+            cv2.putText(
+                frame,
+                f"Gesture: {gesture}",
+                (10, 40),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (255, 0, 0),
+                2,
+                cv2.LINE_AA,
+            )
 
         emplacements = {}
-        for e in fingers_dict:
-            emplacements[fingers_dict[e]] = hand_landmarks.landmark[e]
+        for e in fingers_nb_name:
+            emplacements[fingers_nb_name[e]] = hand_landmarks.landmark[e]
 
         prev_positions.append(emplacements)
     # Show the frame
     if getIdle()[0]:
-        cv2.putText(frame, 'idle', (int(0.9*width), 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(
+            frame,
+            "idle",
+            (int(0.9 * width), 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+            cv2.LINE_AA,
+        )
     else:
-        cv2.putText(frame, 'idling', (int(0.9*width), 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+        cv2.putText(
+            frame,
+            "idling",
+            (int(0.9 * width), 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 0, 255),
+            2,
+            cv2.LINE_AA,
+        )
 
     cv2.imshow("Gesture Recognition", frame)
 
     # Exit on pressing 'q'
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 # Release resources
