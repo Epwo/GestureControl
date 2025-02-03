@@ -1,46 +1,22 @@
 import cv2
 import mediapipe as mp
-import pyautogui
-import time
-import numpy as np
-
-global recent_action
-recent_action = False
+from src.logic import GestureDetection
 
 height = 1280
 width = 720
+# Start video capture
+GD = GestureDetection(height, width)
+cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+prev_positions = []
 
+if not cap.isOpened():
+    print("Error: Could not open video source.")
+    exit()
 
-def getRecentAction():
-    return recent_action
+cv2.namedWindow("Gesture Recognition", cv2.WINDOW_NORMAL)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, height)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, width)
 
-
-def setRecentAction(value):
-    global recent_action
-    recent_action = value
-    return recent_action
-
-
-global is_idle
-is_idle = False
-
-global idle_time
-idle_time = 0.0
-
-
-def getIdle():
-    return is_idle, idle_time
-
-
-def SetIdle(isIdle, IdleTime):
-    global is_idle
-    global idle_time
-    is_idle = isIdle
-    idle_time = IdleTime
-    return is_idle, idle_time
-
-
-# Initialize MediaPipe Hands model
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
     static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5
@@ -60,130 +36,6 @@ default_spec = mp_drawing.DrawingSpec(
     color=(0, 255, 0), thickness=2, circle_radius=2
 )  # Default color for other landmarks
 
-
-def scroll_mouse(direction):
-    if direction == "up":
-        pyautogui.scroll(
-            600
-        )  # Changez -10 à une valeur positive pour défiler vers le haut
-    if direction == "down":
-        pyautogui.scroll(-600)
-
-
-fingers_nb_name = {
-    4: "thumb",
-    8: "index",
-    12: "major",
-    16: "anular",
-    20: "auriculaire",
-    0: "base_hand",
-}
-
-fingers_name_nb = {v: k for k, v in fingers_nb_name.items()}
-
-
-def distance3D(landmark1, landmark2, round_value=2):
-    return [
-        round(landmark1.x - landmark2.x, round_value),
-        round(landmark1.y - landmark2.y, round_value),
-        round(landmark1.z - landmark2.z, round_value),
-    ]
-
-
-# Define gestures based on keypoints or simple rules
-def detect_gesture(landmarks, prev_positions):
-    # Example rule-based detection: Check if thumb is near index finger (signifying a "pinch" gesture)
-
-    thumb_tip = landmarks[fingers_name_nb["thumb"]]
-    index_tip = landmarks[fingers_name_nb["index"]]
-    major_tip = landmarks[fingers_name_nb["major"]]
-    anunlar_tip = landmarks[fingers_name_nb["anular"]]
-    auriculaire_tip = landmarks[fingers_name_nb["auriculaire"]]
-    base_hand = landmarks[fingers_name_nb["base_hand"]]
-
-    distance_thumbs_index = (
-        (thumb_tip.x - index_tip.x) ** 2 + (thumb_tip.y - index_tip.y) ** 2
-    ) ** 0.5
-
-    hand_ratio = (
-        (base_hand.x - landmarks[5].x) / (landmarks[0].y - landmarks[5].y)
-    ) / 0.19
-
-    if len(prev_positions) > 7:
-
-        # print('dists index & previous', distance3D(thumb_tip, prev_positions[-3]["index_tip"]))5
-        is_dist_index = (
-            (distance3D(index_tip, prev_positions[-3]["index"])[1]) ** 2
-        ) ** 0.5 > 0.12
-        is_dist_major = (
-            (distance3D(major_tip, prev_positions[-3]["major"])[1]) ** 2
-        ) ** 0.5 > 0.12
-        is_dist_annu = (
-            (distance3D(anunlar_tip, prev_positions[-3]["anular"])[1]) ** 2
-        ) ** 0.5 > 0.12
-        dim3_dist_base = distance3D(base_hand, prev_positions[-3]["base_hand"])
-        is_base_hand_moving = False
-
-        x_margin_moving = (width / 4700) * hand_ratio
-        y_margin_moving = (height / 3350) * hand_ratio
-        # Calculate the coordinates for the square
-
-        if ((dim3_dist_base[0]) ** 2) ** 0.5 > x_margin_moving:  # x coords
-            print("x axis")
-            print(((dim3_dist_base[0]) ** 2) ** 0.5, ">", x_margin_moving)
-            is_base_hand_moving = True
-        if dim3_dist_base[1] > y_margin_moving:  # y coords
-            print("y axis")
-            is_base_hand_moving = True
-
-        # attention, les valeurs de seuil sont configurés pour le device nino-laptop
-        # il se peut qu'en changeant de camera, on doive re changer les valeurs.
-        # le cas échéant faire un ratio à partir de la taille de pixels de la camera.
-        if not is_base_hand_moving:
-            if not getIdle()[0]:
-                SetIdle(isIdle=True, IdleTime=time.time())
-                print("idling")
-            elif getIdle()[0]:
-                if time.time() - getIdle()[1] > 0.4:
-                    print("idle")
-
-                    setRecentAction(False)
-        else:
-            SetIdle(isIdle=False, IdleTime=time.time())
-
-        if is_dist_index and is_dist_major and is_dist_annu and not is_base_hand_moving:
-            if not getRecentAction():
-                print("swipe", distance3D(index_tip, prev_positions[-3]["index"])[1])
-                print(recent_action, time.time())
-                if distance3D(index_tip, prev_positions[-3]["index"])[1] > 0:
-                    scroll_mouse("down")
-                    setRecentAction(True)
-                    SetIdle(isIdle=False, IdleTime=time.time())
-                    print("scroll down", time.time())
-                    return "swipe_vert down"
-                else:
-                    scroll_mouse("up")
-                    setRecentAction(True)
-                    SetIdle(isIdle=False, IdleTime=time.time())
-                    print("scroll up", time.time())
-                    return "swipe_vert up"
-
-    if distance_thumbs_index < 0.05:
-        return "Pinch"
-    return "Unknown Gesture"
-
-
-# Start video capture
-cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
-prev_positions = []
-
-if not cap.isOpened():
-    print("Error: Could not open video source.")
-    exit()
-
-cv2.namedWindow("Gesture Recognition", cv2.WINDOW_NORMAL)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, height)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, width)
 
 while True:
     ret, frame = cap.read()
@@ -217,14 +69,17 @@ while True:
 
             # Display landmark numbers
             for i, landmark in enumerate(hand_landmarks.landmark):
-                if i in list(fingers_nb_name.keys()) and len(prev_positions) > 6:
-                    prev_coord = prev_positions[-7][fingers_nb_name[i]]
+                if (
+                    i in list(GD.get_fingers_nb_name_dict().keys())
+                    and len(prev_positions) > 6
+                ):
+                    prev_coord = prev_positions[-7][GD.get_fingers_nb_name_dict()[i]]
                     actual_coords = landmark
-                    dist = distance3D(prev_coord, landmark)
+                    dist = GD.distance3D(prev_coord, landmark)
 
                     cv2.putText(
                         frame,
-                        f"{fingers_nb_name[i]}:{x, y} - {dist}",
+                        f"{GD.get_fingers_nb_name_dict()[i]}:{x, y} - {dist}",
                         (10, 10 + i * 10),
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.5,
@@ -248,10 +103,7 @@ while True:
                 )
 
             # Detect gesture based on hand landmarks
-            gesture = detect_gesture(hand_landmarks.landmark, prev_positions)
-            print("----")
-            print(gesture)
-            print("____")
+            gesture = GD.detect_gesture(hand_landmarks.landmark, prev_positions)
             cv2.putText(
                 frame,
                 f"Gesture: {gesture}",
@@ -264,12 +116,15 @@ while True:
             )
 
         emplacements = {}
-        for e in fingers_nb_name:
-            emplacements[fingers_nb_name[e]] = hand_landmarks.landmark[e]
+        for e in GD.get_fingers_nb_name_dict():
+            emplacements[GD.get_fingers_nb_name_dict()[e]] = hand_landmarks.landmark[e]
 
         prev_positions.append(emplacements)
+        print("---")
+        print(emplacements)
+        print("___")
     # Show the frame
-    if getIdle()[0]:
+    if GD.is_idle:
         cv2.putText(
             frame,
             "idle",

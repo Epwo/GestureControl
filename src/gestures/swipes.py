@@ -1,5 +1,5 @@
 import time
-from tips import GetTips
+from src.tips import GetTips
 
 
 def detect_Swipe(self, tips: GetTips, prev_positions, hand_ratio):

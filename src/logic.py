@@ -3,8 +3,8 @@ import mediapipe as mp
 import pyautogui
 import time
 
-from tips import GetTips
-from gestures.swipes import detect_Swipe
+from src.tips import GetTips
+from src.gestures.swipes import detect_Swipe
 
 
 class GestureDetection:
@@ -67,7 +67,7 @@ class GestureDetection:
 
         if len(prev_positions) > 7:
             # we need at least 7 previous positions to detect a gesture
-            self.detect_Swipe(tips, prev_positions, hand_ratio)
+            detect_Swipe(self, tips, prev_positions, hand_ratio)
 
         if distance_thumbs_index < 0.05:
             return "Pinch"
