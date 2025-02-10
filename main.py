@@ -1,4 +1,5 @@
 import cv2
+#import pyautogui
 import mediapipe as mp
 from src.logic import GestureDetection
 
@@ -6,7 +7,7 @@ height = 1280
 width = 720
 # Start video capture
 GD = GestureDetection(height, width)
-cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 prev_positions = []
 
 if not cap.isOpened():
@@ -38,6 +39,8 @@ default_spec = mp_drawing.DrawingSpec(
 
 
 while True:
+    #x, y = pyautogui.position()
+    #print(f"Position actuelle: x={x}, y={y}")
     ret, frame = cap.read()
     if not ret:
         print("Error: Could not read frame.")

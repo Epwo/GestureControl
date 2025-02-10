@@ -5,6 +5,7 @@ import time
 
 from src.tips import GetTips
 from src.gestures.swipes import detect_Swipe
+from src.gestures.close import detect_close_gesture  # Import de la fonction de fermeture
 
 
 class GestureDetection:
@@ -38,7 +39,6 @@ class GestureDetection:
     def scroll_mouse(self, direction):
         if direction == "up":
             pyautogui.scroll(600)
-            # Changez -10 à une valeur positive pour défiler vers le haut
         if direction == "down":
             pyautogui.scroll(-600)
 
@@ -50,9 +50,8 @@ class GestureDetection:
         ]
 
     def detect_gesture(self, landmarks, prev_positions):
-        # Example rule-based detection: Check if thumb is near index finger (signifying a "pinch" gesture)
+        # Initialisation des doigts
         fingers_name_nb = self.get_fingers_name_nb()
-
         tips = GetTips(landmarks, fingers_name_nb)
 
         distance_thumbs_index = (
@@ -63,12 +62,16 @@ class GestureDetection:
             (tips.base_hand.x - landmarks[5].x) / (landmarks[0].y - landmarks[5].y)
         ) / 0.19
 
-        # ⬇️ This is where the custom functions are supposed to be called ⬇️
+        # ⬇️ Appel des fonctions pour les gestuelles ⬇️
 
         if len(prev_positions) > 7:
-            # we need at least 7 previous positions to detect a gesture
+            # Détection du swipe
             detect_Swipe(self, tips, prev_positions, hand_ratio)
 
+        # Appel correct de la fonction de fermeture avec tous les arguments nécessaires
+        detect_close_gesture(self, tips, prev_positions, hand_ratio)
+
+        # Exemple de détection de pincement
         if distance_thumbs_index < 0.05:
             return "Pinch"
         return "Unknown Gesture"
