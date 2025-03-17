@@ -43,7 +43,7 @@ class GestureDetection:
         if direction == "down":
             pyautogui.scroll(-600)
 
-    def press_key(seld, key):
+    def press_key(self, key):
         pyautogui.press(key)
 
     def distance3D(self, landmark1, landmark2, round_value=2):
@@ -108,6 +108,7 @@ class GestureDetection:
                 self.idle_time = time.time()
             # ---------
             detect_Swipe(self, tips, prev_positions, is_base_hand_moving)
+            detect_Horns(self, tips, prev_positions, hand_ratio)
 
             # ---------
             if distance_thumbs_index < 0.05:
