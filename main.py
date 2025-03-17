@@ -1,6 +1,4 @@
 import cv2
-
-# import pyautogui
 import mediapipe as mp
 from src.logic import GestureDetection
 
@@ -25,23 +23,12 @@ hands = mp_hands.Hands(
 )
 mp_drawing = mp.solutions.drawing_utils
 
-blue_spec = mp_drawing.DrawingSpec(
-    color=(255, 0, 0), thickness=5, circle_radius=5
-)  # Blue color for landmark 0
-purple_spec = mp_drawing.DrawingSpec(
-    color=(200, 0, 200), thickness=2, circle_radius=2
-)  # pruple color for landmark 0
-test_spec = mp_drawing.DrawingSpec(
-    color=(100, 100, 100), thickness=2, circle_radius=2
-)  # pruple color for landmark 0
-default_spec = mp_drawing.DrawingSpec(
-    color=(0, 255, 0), thickness=2, circle_radius=2
-)  # Default color for other landmarks
-
+blue_spec = mp_drawing.DrawingSpec(color=(255, 0, 0), thickness=5, circle_radius=5)
+purple_spec = mp_drawing.DrawingSpec(color=(200, 0, 200), thickness=2, circle_radius=2)
+test_spec = mp_drawing.DrawingSpec(color=(100, 100, 100), thickness=2, circle_radius=2)
+default_spec = mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2)
 
 while True:
-    # x, y = pyautogui.position()
-    # print(f"Position actuelle: x={x}, y={y}")
     ret, frame = cap.read()
     if not ret:
         print("Error: Could not read frame.")
@@ -55,15 +42,21 @@ while True:
     result = hands.process(frame_rgb)
 
     # Draw hand annotations and detect gestures if hands are present
-    if result.multi_hand_landmarks:
-        for hand_landmarks in result.multi_hand_landmarks:
+    if result.multi_hand_landmarks and result.multi_handedness:
+        for idx, hand_landmarks in enumerate(result.multi_hand_landmarks):
+            # Check if this is a right hand
+            handedness = result.multi_handedness[idx]
+            if handedness.classification[0].label != "Right":
+                continue  # Skip if not right hand
+
             # Use mapping to apply blue color for index 0 and default color for other landmarks
             landmark_styles = {0: blue_spec}
             for i in range(1, 21):
                 landmark_styles[i] = default_spec
             for i in [5, 9, 13, 17]:
                 landmark_styles[i] = purple_spec
-                # Draw landmarks with the specified styles
+
+            # Draw landmarks with the specified styles
             mp_drawing.draw_landmarks(
                 image=frame,
                 landmark_list=hand_landmarks,
@@ -119,13 +112,16 @@ while True:
                 cv2.LINE_AA,
             )
 
-        emplacements = {}
-        for e in GD.get_fingers_nb_name_dict():
-            emplacements[GD.get_fingers_nb_name_dict()[e]] = hand_landmarks.landmark[e]
+            emplacements = {}
+            for e in GD.get_fingers_nb_name_dict():
+                emplacements[GD.get_fingers_nb_name_dict()[e]] = (
+                    hand_landmarks.landmark[e]
+                )
 
-        prev_positions.append(emplacements)
-        # Sometimes might need to force the use of the GetTips typing..
-        # TODO:
+            prev_positions.append(emplacements)
+            # Only process one right hand (the first one found)
+            break
+
     # Show the frame
     if GD.is_idle:
         cv2.putText(
