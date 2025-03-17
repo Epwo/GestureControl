@@ -97,18 +97,17 @@ class GestureDetection:
             is_base_hand_moving = False
 
             if ((dim3_dist_base[0]) ** 2) ** 0.5 > x_margin_moving:  # x coords
-                print("x axis")
+                print("BASE-HAND MOVING ON X axis")
                 is_base_hand_moving = True
             if dim3_dist_base[1] > y_margin_moving:  # y coords
-                print("y axis")
+                print("BASE-HAND MOVING ON Y axis")
                 is_base_hand_moving = True
 
             # attention, les valeurs de seuil sont configurés pour le device nino-laptop
             # il se peut qu'en changeant de camera, on doive re changer les valeurs.
             # le cas échéant faire un ratio à partir de la taille de pixels de la camera.
             if not is_base_hand_moving:
-                print("is base hand moving:", is_base_hand_moving)
-                print("closed fingers:", closed_fingers)
+
                 if closed_fingers == 4 or closed_fingers == 0:
                     # We need to be in one of the two states to detect a gesture, either all fingers are closed or all fingers w/o thumb are open ( to enable reverse swipe)
                     if not self.is_idle:
@@ -127,20 +126,34 @@ class GestureDetection:
                 self.is_idle = False
                 self.idle_time = time.time()
             # ---------
-            detect_Swipe(self, tips, prev_positions, is_base_hand_moving)
-            detect_Horns(self, tips, prev_positions, hand_ratio)
-            detect_close_gesture(
-                self,
-                tips,
-                prev_positions,
-                is_base_hand_moving,
-                closed_fingers,
-                hand_ratio,
-            )
-            print("recent action:", self.recent_action)
+            if not is_base_hand_moving:
+                gesture = "Unknown Gesture"  # Default value
+
+                # Try each detector and update gesture only if they return something
+                swipe_result = detect_Swipe(
+                    self, tips, prev_positions, is_base_hand_moving
+                )
+                if swipe_result:
+                    gesture = swipe_result
+
+                horns_result = detect_Horns(self, tips, prev_positions, hand_ratio)
+                if horns_result:
+                    gesture = horns_result
+
+                close_result = detect_close_gesture(
+                    self,
+                    tips,
+                    is_base_hand_moving,
+                    closed_fingers,
+                    hand_ratio,
+                )
+                if close_result:
+                    gesture = close_result
+
+                print("Gesture: ", gesture)
+                return gesture
+            else:
+                return "Unknown Gesture"
             # ---------
-            if distance_thumbs_index < 0.05:
-                return "Pinch"
-            return "Unknown Gesture"
         else:
             print("Not enough previous positions.")

@@ -23,7 +23,6 @@ def close_browser_ctrl():
 def detect_close_gesture(
     self: "GestureDetection",
     tips: GetTips,
-    prev_positions,
     is_base_hand_moving,
     closed_fingers,
     hand_ratio,
@@ -37,7 +36,6 @@ def detect_close_gesture(
     thumb_hidden = False
     # Calculate distance between thumb and base hand
     dist_thumb_to_base = self.distance3D(tips.thumb, tips.base_hand)
-    print(">> Thumb to base:", dist_thumb_to_base)
 
     # Check if thumb is closer to the base hand than it normally would be
     # when the hand is open (negative X value means thumb "inside" the hand)
@@ -48,14 +46,12 @@ def detect_close_gesture(
     print(
         f"Closed fingers: {closed_fingers}, Thumb hidden: {thumb_hidden}, Base hand moving: {is_base_hand_moving}"
     )
-    print(">", (closed_fingers == 4 and thumb_hidden and not is_base_hand_moving))
     # Vérification si tous les doigts sont fermés et si le pouce est bien caché sous les autres doigts
     if closed_fingers == 4 and thumb_hidden and not is_base_hand_moving:
-        print("trying to close app")
-        print("is self.close recent action:", self.close_recent_action)
         if not self.close_recent_action:
-            print("Fermeture de l'application")
+
             # close_browser_ctrl()
             close_browser_click()
             self.close_recent_action = True
             # TODO: make a validation time for closing the app (like loading circle, that then close the app)
+            return "Close app"

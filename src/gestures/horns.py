@@ -8,13 +8,7 @@ if TYPE_CHECKING:
 
 def detect_Horns(self: "GestureDetection", tips: GetTips, prev_positions, hand_ratio):
 
-    print("ratio>", hand_ratio)
     # 1.2 dans les conditions initiales donc multiplier les seuils initiaux (0.4,0.4,0.35,0.3,0.08) par 1.2
-
-    print("index>", ((self.distance3D(tips.index, tips.base_hand)[1] ** 2) ** 0.5))
-    print("index seuil>", hand_ratio * 0.19)
-    print("auri>", ((self.distance3D(tips.auriculaire, tips.base_hand)[1]) ** 2) ** 0.5)
-    print("auri seuil>", hand_ratio * 0.20)
 
     is_dist_index = ((self.distance3D(tips.index, tips.base_hand)[1]) ** 2) ** 0.5 > (
         hand_ratio * 0.11
@@ -44,8 +38,8 @@ def detect_Horns(self: "GestureDetection", tips: GetTips, prev_positions, hand_r
             print(
                 "HORNSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSs",
             )
-            print(self.recent_action, time.time())
             self.press_key("playpause")
             self.recent_action = True
             self.is_idle = False
             self.idle_time = time.time()
+            return "Horns (play/pause)"

@@ -26,7 +26,6 @@ def detect_Swipe(
                 "swipe",
                 self.distance3D(tips.index, prev_positions[-3]["index"])[1],
             )
-            print(self.recent_action, time.time())
             if self.distance3D(tips.index, prev_positions[-3]["index"])[1] > 0:
                 self.scroll_mouse("down")
                 # self.press_key("down")

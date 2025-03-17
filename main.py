@@ -79,16 +79,6 @@ while True:
                     actual_coords = landmark
                     dist = GD.distance3D(prev_coord, landmark)
 
-                    cv2.putText(
-                        frame,
-                        f"{GD.get_fingers_nb_name_dict()[i]}:{x, y} - {dist}",
-                        (10, 10 + i * 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (255, 0, 0),
-                        1,
-                        cv2.LINE_AA,
-                    )
                 # Get the coordinates of the landmark
                 h, w, _ = frame.shape
                 x, y = int(landmark.x * w), int(landmark.y * h)
@@ -106,9 +96,32 @@ while True:
 
             # Detect gesture based on hand landmarks
             gesture = GD.detect_gesture(hand_landmarks.landmark, prev_positions)
+
+            # Store the last valid gesture and its timestamp
+            if not hasattr(GD, "last_gesture"):
+                GD.last_gesture = "Unknown Gesture"
+                GD.last_gesture_time = 0
+
+            # If the current gesture is "Unknown" and we have a valid previous gesture
+            if gesture == "Unknown Gesture" and GD.last_gesture != "Unknown Gesture":
+                # Check if 1 second has passed
+                current_time = cv2.getTickCount() / cv2.getTickFrequency()
+                if current_time - GD.last_gesture_time < 1.0:
+                    # Keep showing the last non-Unknown gesture
+                    display_gesture = GD.last_gesture
+                else:
+                    # After 1 second, show Unknown
+                    display_gesture = gesture
+            else:
+                # Update the last gesture if it's not Unknown
+                if gesture != "Unknown Gesture":
+                    GD.last_gesture = gesture
+                    GD.last_gesture_time = cv2.getTickCount() / cv2.getTickFrequency()
+                display_gesture = gesture
+
             cv2.putText(
                 frame,
-                f"Gesture: {gesture}",
+                f"Gesture: {display_gesture}",
                 (10, 40),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1,
