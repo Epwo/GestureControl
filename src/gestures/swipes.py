@@ -16,6 +16,8 @@ def detect_Swipe(self, tips: GetTips, prev_positions, hand_ratio):
     dim3_dist_base = self.distance3D(tips.base_hand, prev_positions[-3]["base_hand"])
     is_base_hand_moving = False
 
+    print(tips.index, prev_positions[-3]["index"])
+
     x_margin_moving = (self.width / 4700) * hand_ratio
     y_margin_moving = (self.height / 3350) * hand_ratio
     # Calculate the coordinates for the square
