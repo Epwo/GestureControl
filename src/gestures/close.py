@@ -52,11 +52,10 @@ def detect_close_gesture(
     # Vérification si tous les doigts sont fermés et si le pouce est bien caché sous les autres doigts
     if closed_fingers == 4 and thumb_hidden and not is_base_hand_moving:
         print("trying to close app")
-        print("is self.recent_action:", self.recent_action)
-        if not self.recent_action:
+        print("is self.close recent action:", self.close_recent_action)
+        if not self.close_recent_action:
             print("Fermeture de l'application")
             # close_browser_ctrl()
             close_browser_click()
-            self.recent_action = True
+            self.close_recent_action = True
             # TODO: make a validation time for closing the app (like loading circle, that then close the app)
-    print("recent action fin:", self.recent_action)

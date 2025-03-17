@@ -112,9 +112,13 @@ class GestureDetection:
                 if closed_fingers == 4 or closed_fingers == 0:
                     # We need to be in one of the two states to detect a gesture, either all fingers are closed or all fingers w/o thumb are open ( to enable reverse swipe)
                     if not self.is_idle:
-                        self.is_idle = True
-                        self.idle_time = time.time()
-                        print("idling")
+                        should_idle = not self.close_recent_action or closed_fingers < 2
+                        if should_idle:
+                            self.is_idle = True
+                            self.idle_time = time.time()
+                            print("idling")
+                            if closed_fingers < 1:
+                                self.close_recent_action = False
                     elif self.is_idle:
                         if time.time() - self.idle_time > 0.4:
                             print("idle")
