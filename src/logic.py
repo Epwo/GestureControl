@@ -5,6 +5,7 @@ import time
 
 from src.tips import GetTips
 from src.gestures.swipes import detect_Swipe
+from src.gestures.horns import detect_Horns
 from src.gestures.close import (
     detect_close_gesture,
 )  # Import de la fonction de fermeture
@@ -109,7 +110,7 @@ class GestureDetection:
                 print("is base hand moving:", is_base_hand_moving)
                 print("closed fingers:", closed_fingers)
                 if not self.is_idle:
-                    should_idle = not self.close_recent_action or closed_fingers < 1
+                    should_idle = not self.close_recent_action or closed_fingers < 2
                     if should_idle:
                         self.is_idle = True
                         self.idle_time = time.time()
@@ -125,6 +126,7 @@ class GestureDetection:
                 self.idle_time = time.time()
             # ---------
             detect_Swipe(self, tips, prev_positions, is_base_hand_moving)
+            detect_Horns(self, tips, prev_positions, hand_ratio)
             detect_close_gesture(
                 self,
                 tips,
