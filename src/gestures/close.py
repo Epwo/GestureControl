@@ -1,0 +1,62 @@
+import time
+import sys
+from src.tips import GetTips
+
+import pyautogui
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.logic import GestureDetection
+
+
+def close_browser_click():
+    pyautogui.hotkey("alt", "f4")
+    print("Application fermée via Alt+F4.")
+
+
+def close_browser_ctrl():
+    pyautogui.hotkey("ctrl", "w")  # Ou ('command', 'w') pour Mac
+    print("Onglet fermé via raccourci.")
+
+
+def detect_close_gesture(
+    self: "GestureDetection",
+    tips: GetTips,
+    prev_positions,
+    is_base_hand_moving,
+    closed_fingers,
+    hand_ratio,
+):
+    """
+    Detects if the hand is fully closed, with the thumb hidden beneath the other fingers,
+    and the hand is not moving (idle).
+    """
+
+    # Vérification si le pouce est sous les autres doigts (en prenant en compte la distance 3D)
+    thumb_hidden = False
+    # Calculate distance between thumb and base hand
+    dist_thumb_to_base = self.distance3D(tips.thumb, tips.base_hand)
+    print(">> Thumb to base:", dist_thumb_to_base)
+
+    # Check if thumb is closer to the base hand than it normally would be
+    # when the hand is open (negative X value means thumb "inside" the hand)
+    if dist_thumb_to_base[0] > (-0.0591 * hand_ratio):
+        thumb_hidden = True
+
+    # Affichage des données pour le débogage
+    print(
+        f"Closed fingers: {closed_fingers}, Thumb hidden: {thumb_hidden}, Base hand moving: {is_base_hand_moving}"
+    )
+    print(">", (closed_fingers == 4 and thumb_hidden and not is_base_hand_moving))
+    # Vérification si tous les doigts sont fermés et si le pouce est bien caché sous les autres doigts
+    if closed_fingers == 4 and thumb_hidden and not is_base_hand_moving:
+        print("trying to close app")
+        print("is self.recent_action:", self.close_recent_action)
+        if not self.close_recent_action:
+            print("Fermeture de l'application")
+            # close_browser_ctrl()
+            close_browser_click()
+            self.close_recent_action = True
+        # sys.exit()
+    print("recent action fin:", self.recent_action)
