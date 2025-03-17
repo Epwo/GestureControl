@@ -5,7 +5,7 @@ import time
 
 from src.tips import GetTips
 from src.gestures.swipes import detect_Swipe
-
+from src.gestures.volume import volume_up_and_down
 
 class GestureDetection:
     def __init__(self, height, width):
@@ -67,8 +67,8 @@ class GestureDetection:
 
         if len(prev_positions) > 7:
             # we need at least 7 previous positions to detect a gesture
-            detect_Swipe(self, tips, prev_positions, hand_ratio)
-
+            #detect_Swipe(self, tips, prev_positions, hand_ratio)
+            volume_up_and_down(self, tips, prev_positions, hand_ratio)
         if distance_thumbs_index < 0.05:
             return "Pinch"
         return "Unknown Gesture"

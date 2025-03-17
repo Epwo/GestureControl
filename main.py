@@ -6,7 +6,7 @@ height = 1280
 width = 720
 # Start video capture
 GD = GestureDetection(height, width)
-cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 prev_positions = []
 
 if not cap.isOpened():
