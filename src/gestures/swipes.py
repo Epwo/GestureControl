@@ -1,8 +1,14 @@
 import time
 from src.tips import GetTips
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.logic import GestureDetection
 
 
-def detect_Swipe(self, tips: GetTips, prev_positions, is_base_hand_moving):
+def detect_Swipe(
+    self: "GestureDetection", tips: GetTips, prev_positions, is_base_hand_moving
+):
     # print('dists index & previous', distance3D(thumb_tip, prev_positions[-3]["index_tip"]))5
     is_dist_index = (
         (self.distance3D(tips.index, prev_positions[-3]["index"])[1]) ** 2

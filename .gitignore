@@ -1,9 +1,6 @@
 .*/
-*/__*
-*/__pycache__/*
-*/.vscode/*
-*/.idea/*
-*/.pytest_cache/*
-*/.mypy_cache/*
-*/.tox/*
-src/gestures/__pycache__/*
+.env
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class

@@ -1,12 +1,17 @@
 import cv2
 import mediapipe as mp
+from dotenv import load_dotenv
+import os
 from src.logic import GestureDetection
 
 height = 1280
 width = 720
+load_dotenv()
+video_source = os.environ.get("VIDEO_SOURCE")
+print("video_srouce : ", video_source)
 # Start video capture
 GD = GestureDetection(height, width)
-cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(int(video_source), cv2.CAP_DSHOW)
 prev_positions = []
 
 if not cap.isOpened():
