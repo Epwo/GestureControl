@@ -1,3 +1,10 @@
 
 .*/
 */__*
+*/__pycache__/*
+*/.vscode/*
+*/.idea/*
+*/.pytest_cache/*
+*/.mypy_cache/*
+*/.tox/*
+src/gestures/__pycache__/*

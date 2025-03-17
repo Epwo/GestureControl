@@ -39,7 +39,6 @@ def detect_Swipe(self, tips: GetTips, prev_positions, hand_ratio):
         elif self.is_idle:
             if time.time() - self.idle_time > 0.4:
                 print("idle")
-
                 self.recent_action = False
     else:
         self.is_idle = False
