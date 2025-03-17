@@ -5,6 +5,7 @@ import time
 
 from src.tips import GetTips
 from src.gestures.swipes import detect_Swipe
+from src.gestures.horns import detect_Horns
 
 
 class GestureDetection:
@@ -60,14 +61,17 @@ class GestureDetection:
         ) ** 0.5
 
         hand_ratio = (
-            (tips.base_hand.x - landmarks[5].x) / (landmarks[0].y - landmarks[5].y)
+            (tips.base_hand.x - landmarks[5].x) / (tips.base_hand.y - landmarks[5].y)
         ) / 0.19
+        print("ratio : ", hand_ratio)
+        # TODO: refractor the code to use the get hand ratio, with dist base_hand base finger
 
         # ⬇️ This is where the custom functions are supposed to be called ⬇️
 
         if len(prev_positions) > 7:
             # we need at least 7 previous positions to detect a gesture
-            detect_Swipe(self, tips, prev_positions, hand_ratio)
+            # detect_Swipe(self, tips, prev_positions, hand_ratio)
+            detect_Horns(self, tips, prev_positions, hand_ratio)
 
         if distance_thumbs_index < 0.05:
             return "Pinch"
