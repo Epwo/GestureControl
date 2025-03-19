@@ -6,6 +6,7 @@ import time
 from src.tips import GetTips
 from src.gestures.swipes import detect_Swipe
 from src.gestures.horns import detect_Horns
+from src.gestures.entry import detect_victory_gesture
 from src.gestures.close import (
     detect_close_gesture,
 )  # Import de la fonction de fermeture
@@ -149,6 +150,15 @@ class GestureDetection:
                 )
                 if close_result:
                     gesture = close_result
+
+                entry_result = detect_victory_gesture(
+                    self,
+                    closed_fingers,
+                    is_base_hand_moving,
+                    landmarks
+                )
+                if entry_result:
+                    gesture = entry_result
 
                 print("Gesture: ", gesture)
                 return gesture
