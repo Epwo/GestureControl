@@ -8,6 +8,7 @@ from src.gestures.swipes import detect_Swipe
 from src.gestures.close import (
     detect_close_gesture,
 )  # Import de la fonction de fermeture
+from src.gestures.volume import detect_volume_change
 
 
 class GestureDetection:
@@ -130,6 +131,13 @@ class GestureDetection:
                 tips,
                 prev_positions,
                 is_base_hand_moving,
+                closed_fingers,
+                hand_ratio,
+            )
+            detect_volume_change(
+                self,
+                tips,
+                prev_positions,
                 closed_fingers,
                 hand_ratio,
             )
