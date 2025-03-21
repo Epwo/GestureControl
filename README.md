@@ -8,7 +8,7 @@ Ce projet permet de contrôler votre ordinateur grâce à des gestes de la main 
 2. Installez les dépendances requises :
 
 ```bash
-pip install opencv-python mediapipe python-dotenv pyautogui
+pip install -r requirements.txt
 ```
 
 ## Configuration
@@ -56,4 +56,9 @@ La détection est calibrée pour fonctionner avec la main droite uniquement. Le 
 
 ## Contribution
 
-Les contributions sont les bienvenues ! N'hésitez pas à proposer de nouveaux gestes ou des améliorations du code existant via des pull requests.
+Ce projet a été effectué par le groupe 6 : composé de 
+- POSTIC Ewann
+- PIREAUD Nino
+- MINVIELLE Julien
+- BENARD Hugo
+- DUCLOS Etienne
