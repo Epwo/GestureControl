@@ -1,20 +1,21 @@
 #include <Arduino.h>
-#include <IRremote.h>
 #include <ArduinoJson.h>
 #include <SPIFFS.h>
 
 // Pin configuration
-#define IR_RECEIVE_PIN 2  // IR receiver connected to GPIO pin 15
+#define IR_RECEIVE_PIN 2  // IR receiver connected to GPIO pin 2
 
 // Define file path for JSON storage
 #define JSON_FILE_PATH "/remote_codes.json"
 
 // Global variables
-IRrecv irReceiver(IR_RECEIVE_PIN);
-decode_results irResults;
 String currentCommand = "";
 bool awaitingLabel = false;
 uint32_t lastIRCode = 0;
+volatile unsigned long irData = 0;
+volatile int bitCount = 0;
+volatile boolean irReceiving = false;
+volatile unsigned long lastTime = 0;
 
 // Function prototypes
 void setupIRReceiver();
@@ -23,6 +24,7 @@ bool saveIRCodeToJSON(uint32_t code, String label);
 void listAllCodes();
 void processSerialCommand();
 void displayHelp();
+void IRAM_ATTR handleIRInterrupt();
 
 void setup() {
   Serial.begin(115200);
@@ -43,18 +45,19 @@ void setup() {
 }
 
 void loop() {
-  // Check if IR signal received
-  if (irReceiver.decode(&irResults)) {
-    if (irResults.decode_type != UNKNOWN) {
-      lastIRCode = irResults.value;
-      Serial.print("Received IR Code: 0x");
-      Serial.println(lastIRCode, HEX);
-      
-      if (!awaitingLabel) {
-        Serial.println("Type 'save [LABEL]' to save this code with a label");
-      }
+  // Process IR data if a complete code was received
+  if (bitCount >= 32) {
+    lastIRCode = irData;
+    Serial.print("Received IR Code: 0x");
+    Serial.println(lastIRCode, HEX);
+    
+    if (!awaitingLabel) {
+      Serial.println("Type 'save [LABEL]' to save this code with a label");
     }
-    irReceiver.resume(); // Receive the next value
+    
+    // Reset for next code
+    bitCount = 0;
+    irData = 0;
   }
   
   // Check if serial input available
@@ -64,8 +67,43 @@ void loop() {
 }
 
 void setupIRReceiver() {
-  irReceiver.enableIRIn();
+  pinMode(IR_RECEIVE_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(IR_RECEIVE_PIN), handleIRInterrupt, CHANGE);
   Serial.println("IR Receiver enabled");
+}
+
+// Interrupt handler for IR signal
+void IRAM_ATTR handleIRInterrupt() {
+  unsigned long currentTime = micros();
+  unsigned long duration = currentTime - lastTime;
+  lastTime = currentTime;
+  
+  // Basic NEC protocol decoding
+  // Typical NEC protocol: 9ms leading pulse, 4.5ms space, then data bits
+  
+  if (duration > 8000 && duration < 10000) {
+    // Start of new transmission (NEC leading pulse ~9ms)
+    irReceiving = true;
+    bitCount = 0;
+    irData = 0;
+  } 
+  else if (irReceiving) {
+    if (duration > 1000 && duration < 2000) {
+      // Bit 1 (~1.6ms space)
+      irData = (irData << 1) | 1;
+      bitCount++;
+    } 
+    else if (duration > 400 && duration < 700) {
+      // Bit 0 (~0.56ms space)
+      irData = (irData << 1);
+      bitCount++;
+    }
+    
+    // If we've received all bits, stop receiving
+    if (bitCount >= 32) {
+      irReceiving = false;
+    }
+  }
 }
 
 void setupSPIFFS() {
