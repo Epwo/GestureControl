@@ -31,11 +31,8 @@ def detect_victory_gesture(
 
     is_victory = index_extended and major_extended and (closed_fingers == 2)
 
-    # Affichage pour le débogage
-    print(f"V détecté {is_victory}, Base hand moving: {is_base_hand_moving}")
-
     # Vérification du geste et de l'absence de mouvement de la main
     if is_victory and not is_base_hand_moving and not self.recent_action:
         self.recent_action = True
         press_enter()
-        return "Victory gesture detected - Enter pressed"
+        return "OK"

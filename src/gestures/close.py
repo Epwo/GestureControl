@@ -43,9 +43,6 @@ def detect_close_gesture(
         thumb_hidden = True
 
     # Affichage des données pour le débogage
-    print(
-        f"Closed fingers: {closed_fingers}, Thumb hidden: {thumb_hidden}, Base hand moving: {is_base_hand_moving}"
-    )
     # Vérification si tous les doigts sont fermés et si le pouce est bien caché sous les autres doigts
     if closed_fingers == 4 and thumb_hidden and not is_base_hand_moving:
         if not self.close_recent_action:
@@ -54,4 +51,4 @@ def detect_close_gesture(
             close_browser_click()
             self.close_recent_action = True
             # TODO: make a validation time for closing the app (like loading circle, that then close the app)
-            return "Close app"
+            return "ON/OFF"

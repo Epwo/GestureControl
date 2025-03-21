@@ -3,6 +3,7 @@ import mediapipe as mp
 from dotenv import load_dotenv
 import os
 from src.logic import GestureDetection
+from src.requests import GestureAPI
 
 height = 1280
 width = 720
@@ -13,6 +14,9 @@ print("video_srouce : ", video_source)
 GD = GestureDetection(height, width)
 cap = cv2.VideoCapture(int(video_source), cv2.CAP_DSHOW)
 prev_positions = []
+
+gestureAPI = GestureAPI()
+# initialize the api endpoint ( esp32)
 
 if not cap.isOpened():
     print("Error: Could not open video source.")
@@ -114,9 +118,12 @@ while True:
                     display_gesture = gesture
             else:
                 # Update the last gesture if it's not Unknown
-                if gesture != "Unknown Gesture":
+                if gesture != "Unknown Gesture" and gesture != None:
                     GD.last_gesture = gesture
                     GD.last_gesture_time = cv2.getTickCount() / cv2.getTickFrequency()
+                    print("SENDING REQ TO API")
+                    print(gesture)
+                    gestureAPI.send_gesture_code(gesture)
                 display_gesture = gesture
 
             cv2.putText(

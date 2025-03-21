@@ -42,4 +42,4 @@ def detect_Horns(self: "GestureDetection", tips: GetTips, prev_positions, hand_r
             self.recent_action = True
             self.is_idle = False
             self.idle_time = time.time()
-            return "Horns (play/pause)"
+            return "PLAY/PAUSE"

@@ -33,7 +33,7 @@ def detect_Swipe(
                 self.is_idle = False
                 self.idle_time = time.time()
                 print("scroll down", time.time())
-                return "swipe_vert down"
+                return "DOWN"
             else:
                 self.scroll_mouse("up")
                 # self.press_key("up")
@@ -41,4 +41,4 @@ def detect_Swipe(
                 self.is_idle = False
                 self.idle_time = time.time()
                 print("scroll up", time.time())
-                return "swipe_vert up"
+                return "UP"

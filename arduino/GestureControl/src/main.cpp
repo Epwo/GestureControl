@@ -8,8 +8,8 @@
 #define IR_SEND_PIN 14 // IR LED connected to GPIO pin 14
 
 // WiFi credentials
-const char* ssid = "TCL-C6PM";
-const char* password = "n9miTWDTLyLY";
+const char* ssid = "Banane";
+const char* password = "CoolSwag";
 // Web server on port 80
 WebServer server(80);
 
