@@ -36,6 +36,7 @@ Positionnez votre main droite devant la caméra pour commencer à utiliser les g
 | 🤘 Signe des cornes  | Index et auriculaire relevés, autres doigts baissés | Lecture/Pause                 |
 | ✋ Balayage vertical | Main ouverte avec mouvement vertical                  | Défilement haut/bas          |
 | ✊ Main fermée      | Tous les doigts fermés avec le pouce caché          | Fermer l'application (Alt+F4) |
+| ✌️ signe V      | Tous les doigts fermés sauf le majeur et l'index       | Appuyer sur OK/ENTREE |
 
 ## Comment ajouter de nouveaux gestes
 
