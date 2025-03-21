@@ -152,10 +152,7 @@ class GestureDetection:
                     gesture = close_result
 
                 entry_result = detect_victory_gesture(
-                    self,
-                    closed_fingers,
-                    is_base_hand_moving,
-                    landmarks
+                    self, closed_fingers, is_base_hand_moving, landmarks
                 )
                 if entry_result:
                     gesture = entry_result
